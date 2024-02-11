@@ -13,7 +13,9 @@ As 2024 marks the resurgence of RSS and Atom, I decided to update my rudimentary
 * Python 3 
 * Feedparser
 
-## rsscluster
+## Tools
+
+### rsscluster
 
 [rsscluster.py](https://github.com/adulau/rss-tools/blob/master/bin/rsscluster.py) is a simple script that clusters items from an RSS feed based on a specified time interval, expressed in days.
 The `maxitem` parameter defines the maximum number of items to keep after clustering. This script can be particularly useful for platforms like Mastodon, where a user might be very active in a single day and you want to cluster their activity into a single RSS item for a defined time slot.
@@ -22,7 +24,7 @@ The `maxitem` parameter defines the maximum number of items to keep after cluste
 rsscluster.py --interval 2 --maxitem 20 "http://paperbay.org/@a.rss" > adulau.xml
 ~~~
 
-## rssmerge
+### rssmerge
 
 [rssmerge.py](https://github.com/adulau/rss-tools/blob/master/bin/rssmerge.py) is a simple script designed to aggregate RSS feeds and merge them in reverse chronological order. It outputs the merged content in text, HTML, or Markdown format. This tool is useful for tracking recent events from various feeds and publishing them on your website.
 
@@ -43,7 +45,7 @@ Options:
                         output format (text, phtml, markdown), default text
 ~~~
 
-## rssdir
+### rssdir
 
 [rssdir.py](https://github.com/adulau/rss-tools/blob/master/bin/rssdir.py) is a simple and straightforward script designed to convert any directory on the filesystem into an RSS feed.
 
@@ -66,7 +68,21 @@ Options:
                         maximum item to list in the feed, default 32
 ~~~
 
-## Scripts which need to be converted an are there for historical purpose
+## License
+
+rss-tools are open source/free software licensed under the permissive 2-clause BSD license.
+
+Copyright 2007-2024 Alexandre Dulaunoy
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+## Scripts which need to be converted and are there for historical purpose
 
 rsscount.py
 -----------
