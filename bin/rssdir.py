@@ -136,6 +136,7 @@ else:
     maxitem = options.maxitem
 
 if not args:
+    print("Missing directory")
     parser.print_help()
     sys.exit(0)
 
