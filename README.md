@@ -15,7 +15,7 @@ As 2024 marks the resurgence of RSS and Atom, I decided to update my rudimentary
 
 ## rsscluster
 
-[rsscluster.py](/blob/master/bin/rsscluster.py) is a simple script that clusters items from an RSS feed based on a specified time interval, expressed in days.
+[rsscluster.py](https://github.com/adulau/rss-tools/blob/master/bin/rsscluster.py) is a simple script that clusters items from an RSS feed based on a specified time interval, expressed in days.
 The `maxitem` parameter defines the maximum number of items to keep after clustering. This script can be particularly useful for platforms like Mastodon, where a user might be very active in a single day and you want to cluster their activity into a single RSS item for a defined time slot.
 
 ~~~shell
@@ -24,7 +24,7 @@ rsscluster.py --interval 2 --maxitem 20 "http://paperbay.org/@a.rss" > adulau.xm
 
 ## rssmerge
 
-[rssmerge.py](/blob/master/bin/rssmerge.py) is a simple script designed to aggregate RSS feeds and merge them in reverse chronological order. It outputs the merged content in text, HTML, or Markdown format. This tool is useful for tracking recent events from various feeds and publishing them on your website.
+[rssmerge.py](https://github.com/adulau/rss-tools/blob/master/bin/rssmerge.py) is a simple script designed to aggregate RSS feeds and merge them in reverse chronological order. It outputs the merged content in text, HTML, or Markdown format. This tool is useful for tracking recent events from various feeds and publishing them on your website.
 
 ~~~shell
 python3 rssmerge.py --maxitem 30 --output markdown "http://api.flickr.com/services/feeds/photos_public.gne?id=31797858@N00&lang=en-us&format=atom"  "http://www.foo.be/cgi-bin/wiki.pl?action=journal&tile=AdulauMessyDesk" "http://paperbay.org/@a.rss" "http://infosec.exchange/@adulau.rss"
