@@ -24,7 +24,7 @@ from optparse import OptionParser
 # print sys.stdout.encoding
 version = "0.2"
 
-feedparser.USER_AGENT = "rsscluster.py " + version + " +http://www.foo.be/"
+feedparser.USER_AGENT = "rsscluster.py " + version + " +https://github.com/adulau/rss-tools"
 
 
 def date_as_rfc(value):

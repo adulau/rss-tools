@@ -16,7 +16,7 @@ import time
 import datetime
 from optparse import OptionParser
 
-feedparser.USER_AGENT = "rsscount.py +http://www.foo.be/"
+feedparser.USER_AGENT = "rsscount.py +https://github.com/adulau/rss-tools"
 
 usage = "usage: %prog url(s)"
 parser = OptionParser(usage)

@@ -26,7 +26,7 @@ from optparse import OptionParser
 import html
 from bs4 import BeautifulSoup
 
-feedparser.USER_AGENT = "rssmerge.py +http://www.foo.be/"
+feedparser.USER_AGENT = "rssmerge.py +https://github.com/adulau/rss-tools"
 
 
 def RenderMerge(itemlist, output="text"):
