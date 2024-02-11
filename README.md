@@ -68,6 +68,23 @@ Options:
                         maximum item to list in the feed, default 32
 ~~~
 
+### rsscount
+
+[rsscount.py](https://github.com/adulau/rss-tools/blob/master/bin/rsscount.py) is a straightforward script designed to count the number of items in an RSS feed per day. It is utilized to construct the [wiki creativity index](http://www.foo.be/cgi-bin/wiki.pl/WikiCreativityIndex). The script accepts an unlimited number of URL arguments. It can be used to feed statistical tools.
+
+~~~shell
+python3 rsscount.py https://paperbay.org/@a.rss | sort
+20240121	3
+20240124	1
+20240128	4
+20240130	1
+20240131	1
+20240201	1
+20240203	2
+20240204	3
+20240210	4
+~~~
+
 ## License
 
 rss-tools are open source/free software licensed under the permissive 2-clause BSD license.
@@ -83,13 +100,6 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## Scripts which need to be converted and are there for historical purpose
-
-rsscount.py
------------
-
-rsscount.py is a simple script to count how many items are in a RSS feed per day. This is used to build the [wiki creativity index](http://www.foo.be/cgi-bin/wiki.pl/WikiCreativityIndex). There is no limit for url arguments.
-
-    rsscount.py "<rss_url>" | sort
 
 rssinternetdraft.py
 -------------------
