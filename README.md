@@ -1,27 +1,49 @@
-RSS tools
-=========
+# RSS tools
 
-Following an old idea from 2007 published on my blog post called [RSS Everything?](http://www.foo.be/cgi-bin/wiki.pl/2007-02-11_RSS_Everything), this is a set of tools to
-work on RSS (Really Simple Syndication) in an [Unix way](http://en.wikipedia.org/wiki/Unix_philosophy).
+Following an old idea from 2007, published in my blog post titled [RSS Everything?](http://www.foo.be/cgi-bin/wiki.pl/2007-02-11_RSS_Everything), this set of tools is designed to work with RSS (Really Simple Syndication) in a manner consistent with the [Unix philosophy](http://en.wikipedia.org/wiki/Unix_philosophy).
 
-The code committed in this repository is old Python code from 2007, it might break your PC, kill your cat or the Flying Spaghetti Monster might loose a ball.  
+The code committed in this repository was originally old Python code from 2007. It might break your PC, harm your cat, or cause the Flying Spaghetti Monster to lose a meatball.
 
-Forks and pull requests more than welcome. You have been warned the code was just there to experiment RSS workflows.
+As 2024 marks the resurgence of RSS and Atom, I decided to update my rudimentary RSS tools to make them contemporary.
 
-Requirements
-------------
+[Forks and pull requests](https://github.com/adulau/rss-tools) are more than welcome. Be warned: this code was initially created for experimenting with RSS workflows.
 
-* Python 2.x
+## Requirements
+
+* Python 3 
 * Feedparser
 
-rsscluster.py
--------------
+## rsscluster
 
-rsscluster.py is a simple script to cluster items from an rss feed based on a time interval (expressed in number of days).
-The maxitem is the number of item maximum kept after the clustering. An example use is for del.icio.us/pinboard.in where 
-you can have a lot of bookmarks during one day and you want to cluster them in one single item per a defined time slot in RSS or in (X)HTML.
+[rsscluster.py](/blob/master/bin/rsscluster.py) is a simple script that clusters items from an RSS feed based on a specified time interval, expressed in days.
+The `maxitem` parameter defines the maximum number of items to keep after clustering. This script can be particularly useful for platforms like Mastodon, where a user might be very active in a single day and you want to cluster their activity into a single RSS item for a defined time slot.
 
-    rsscluster.py --interval 2 --maxitem 20 "http://del.icio.us/rss/adulau" >adulau.xml
+~~~shell
+rsscluster.py --interval 2 --maxitem 20 "http://paperbay.org/@a.rss" > adulau.xml
+~~~
+
+## rssmerge
+
+[rssmerge.py](/blob/master/bin/rssmerge.py) is a simple script designed to aggregate RSS feeds and merge them in reverse chronological order. It outputs the merged content in text, HTML, or Markdown format. This tool is useful for tracking recent events from various feeds and publishing them on your website.
+
+~~~shell
+python3 rssmerge.py --maxitem 30 --output markdown "http://api.flickr.com/services/feeds/photos_public.gne?id=31797858@N00&lang=en-us&format=atom"  "http://www.foo.be/cgi-bin/wiki.pl?action=journal&tile=AdulauMessyDesk" "http://paperbay.org/@a.rss" "http://infosec.exchange/@adulau.rss"
+~~~
+
+~~~shell
+Usage: rssmerge.py [options] url
+
+Options:
+  -h, --help            show this help message and exit
+  -m MAXITEM, --maxitem=MAXITEM
+                        maximum item to list in the feed, default 200
+  -s SUMMARYSIZE, --summarysize=SUMMARYSIZE
+                        maximum size of the summary if a title is not present
+  -o OUTPUT, --output=OUTPUT
+                        output format (text, phtml, markdown), default text
+~~~
+
+## Scripts which need to be converted an are there for historical purpose
 
 rsscount.py
 -----------
@@ -42,11 +64,3 @@ rssinternetdraft.py
 
 rssinternetdraft is a simple test to read a mbox file and generate an RSS from the subject.
 
-rssmerge.py
------------
-
-rssmerge.py is a simple script to gather rss feed and merge them in reverse time order. Useful to keep track of recent events.
-
-    python2.5 --maxitem 30 --output phtml "http://api.flickr.com/services/feeds/photos_public.gne?id=31797858@N00&lang=en-us&format=atom"  "http://www.foo.be/cgi-bin/wiki.pl?action=journal&tile=AdulauMessyDesk"
-    
-  
