@@ -43,6 +43,29 @@ Options:
                         output format (text, phtml, markdown), default text
 ~~~
 
+## rssdir
+
+[rssdir.py](https://github.com/adulau/rss-tools/blob/master/bin/rssdir.py) is a simple and straightforward script designed to convert any directory on the filesystem into an RSS feed.
+
+~~~shell
+rssdir.py --prefix https://www.foo.be/cours/ . >rss.xml
+~~~
+
+~~~shell
+Usage: rssdir.py [options] directory
+
+Options:
+  -h, --help            show this help message and exit
+  -p PREFIX, --prefix=PREFIX
+                        http prefix to be used for each entry, default none
+  -t TITLE, --title=TITLE
+                        set a title to the rss feed, default using prefix
+  -l LINK, --link=LINK  http link set, default is prefix and none if prefix
+                        not set
+  -m MAXITEM, --maxitem=MAXITEM
+                        maximum item to list in the feed, default 32
+~~~
+
 ## Scripts which need to be converted an are there for historical purpose
 
 rsscount.py
@@ -51,13 +74,6 @@ rsscount.py
 rsscount.py is a simple script to count how many items are in a RSS feed per day. This is used to build the [wiki creativity index](http://www.foo.be/cgi-bin/wiki.pl/WikiCreativityIndex). There is no limit for url arguments.
 
     rsscount.py "<rss_url>" | sort
-
-rssdir.py
----------
-
-rssdir is a simply-and-dirty script to rssify any directory on the filesystem.
-
-    rssdir.py --prefix http://www.foo.be/cours/ . >rss.xml
 
 rssinternetdraft.py
 -------------------
