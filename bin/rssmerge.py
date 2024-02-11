@@ -24,6 +24,7 @@ import datetime
 import hashlib
 from optparse import OptionParser
 import html
+from bs4 import BeautifulSoup
 
 feedparser.USER_AGENT = "rssmerge.py +http://www.foo.be/"
 
@@ -37,7 +38,6 @@ def RenderMerge(itemlist, output="text"):
             i = i + 1
             # Keep consistent datetime representation if not use allitem[item[1]]['updated']
             timetuple = datetime.datetime.fromtimestamp(allitem[item[1]]["epoch"])
-
             print(
                 str(i)
                 + ":"
@@ -92,12 +92,21 @@ parser.add_option(
     "-m",
     "--maxitem",
     dest="maxitem",
+    default=200,
     help="maximum item to list in the feed, default 200",
+)
+parser.add_option(
+    "-s",
+    "--summarysize",
+    dest="summarysize",
+    default=60,
+    help="maximum size of the summary if a title is not present",
 )
 parser.add_option(
     "-o",
     "--output",
     dest="output",
+    default="text",
     help="output format (text, phtml, markdown), default text",
 )
 
@@ -105,12 +114,6 @@ parser.add_option(
 pattern = "%Y-%m-%d %H:%M:%S"
 
 (options, args) = parser.parse_args()
-
-if options.output == None:
-    options.output = "text"
-
-if options.maxitem == None:
-    options.maxitem = 200
 
 allitem = {}
 
@@ -137,7 +140,13 @@ for url in args:
         allitem[linkkey]["link"] = str(el.link)
         allitem[linkkey]["epoch"] = int(elepoch)
         allitem[linkkey]["updated"] = el.updated
-        allitem[linkkey]["title"] = el.title
+        if "title" in el:
+            allitem[linkkey]["title"] = html.unescape(el.title)
+        else:
+            cleantext = BeautifulSoup(el.summary, "lxml").text
+            allitem[linkkey]["title"] = cleantext[: options.summarysize]
+
+            print(allitem[linkkey]["title"])
 
 
 itemlist = []
