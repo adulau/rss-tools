@@ -4,7 +4,7 @@ Following an old idea from 2007, published in my ancient blog post titled [RSS E
 
 The code committed in this repository was originally old Python code from 2007. It might break your PC, harm your cat, or cause the Flying Spaghetti Monster to lose a meatball.
 
-As 2024 marks the resurgence of RSS and Atom, I decided to update my rudimentary RSS tools to make them contemporary.
+As 2024 marks the resurgence of RSS and Atom[^1], I decided to update my rudimentary RSS tools to make them contemporary.
 
 [Forks and pull requests](https://github.com/adulau/rss-tools) are more than welcome. Be warned: this code was initially created for experimenting with RSS workflows.
 
@@ -110,10 +110,5 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-## Scripts which need to be converted and are there for historical purpose
-
-rssinternetdraft.py
--------------------
-
-rssinternetdraft is a simple test to read a mbox file and generate an RSS from the subject.
+[^1]: As web platforms continue to deteriorate in quality, and with the diminishing visibility across various pseudo-social networks coupled with the decline of RSS culture, the emergence of new open-source, federated networks using ActivityPub (an advanced RSS format) seems particularly timely. I believe that reviving open-source tools developed in 2007 for handling RSS is increasingly relevant. Many of these new federated platforms are revitalizing RSS, which is a trend that deserves encouragement and support.
 
