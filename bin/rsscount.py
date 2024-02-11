@@ -7,55 +7,49 @@
 #
 # The output is epoch + the number of changes separated with a tab.
 #
-# This is used to build statistic like the wiki creativity index.             
+# This is used to build statistic like the wiki creativity index.
 #
 
 import feedparser
-import sys,os
+import sys, os
 import time
 import datetime
 from optparse import OptionParser
 
-
 feedparser.USER_AGENT = "rsscount.py +http://www.foo.be/"
-
 
 usage = "usage: %prog url(s)"
 parser = OptionParser(usage)
 
-
 (options, args) = parser.parse_args()
 
 if args is None:
-    print usage
+    print(usage)
 
- 
 counteditem = {}
 
 for url in args:
 
-        d = feedparser.parse(url)
+    d = feedparser.parse(url)
+    for el in d.entries:
 
-        for el in d.entries:
+        if "modified_parsed" in el:
+            eldatetime = datetime.datetime.fromtimestamp(
+                time.mktime(el.modified_parsed)
+            )
+        else:
+            eldatetime = datetime.datetime.fromtimestamp(
+                time.mktime(el.published_parsed)
+            )
+        eventdate = eldatetime.isoformat(" ").split(" ", 1)
+        edate = eventdate[0].replace("-", "")
 
-		try:
-                	eldatetime = datetime.datetime.fromtimestamp(time.mktime(el.modified_parsed))
-		except AttributeError:
-			# discard RSS without pubDate grrr...
-			break
-		
-		
-		eventdate = eldatetime.isoformat(' ').split(' ',1)
-		edate = eventdate[0].replace("-","")
-
- 		if counteditem.has_key(edate):
-			counteditem[edate] = counteditem[edate] + 1
-		else:
-			counteditem[edate] = 1
-
-
-for k in counteditem.keys():
-
-	print unicode(k).encode("utf-8")+"\t"+ unicode(counteditem[k]).encode("utf-8")
+        if edate in counteditem:
+            counteditem[edate] = counteditem[edate] + 1
+        else:
+            counteditem[edate] = 1
 
 
+for k in list(counteditem.keys()):
+
+    print(f"{k}\t{counteditem[k]}")
