@@ -45,6 +45,17 @@ Options:
                         output format (text, phtml, markdown), default text
 ~~~
 
+`python3 rssmerge.py --maxitem 5 --output markdown "http://api.flickr.com/services/feeds/photos_public.gne?id=31797858@N00&lang=en-us&format=atom"  "http://www.foo.be/cgi-bin/wiki.pl?action=journal&tile=AdulauMessyDesk" "http://paperbay.org/@a.rss" "http://infosec.exchange/@adulau.rss"`
+
+#### Sample output
+
+- [harvesting society #street #streetphotography #paris #societ](https://paperbay.org/@a/111908018263388808)
+- [harvesting society](https://www.flickr.com/photos/adulau/53520731553/)
+- [late in the night#bynight #leica #streetphotography #street ](https://paperbay.org/@a/111907960149305774)
+- [late in the night](https://www.flickr.com/photos/adulau/53520867709/)
+- [geography of illusion#photography #art #photo #bleu #blue #a](https://paperbay.org/@a/111907911876620745)
+
+
 ### rssdir
 
 [rssdir.py](https://github.com/adulau/rss-tools/blob/master/bin/rssdir.py) is a simple and straightforward script designed to convert any directory on the filesystem into an RSS feed.
