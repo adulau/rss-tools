@@ -1,6 +1,6 @@
 # RSS tools
 
-Following an old idea from 2007, published in my blog post titled [RSS Everything?](http://www.foo.be/cgi-bin/wiki.pl/2007-02-11_RSS_Everything), this set of tools is designed to work with RSS (Really Simple Syndication) in a manner consistent with the [Unix philosophy](http://en.wikipedia.org/wiki/Unix_philosophy).
+Following an old idea from 2007, published in my ancient blog post titled [RSS Everything?](http://www.foo.be/cgi-bin/wiki.pl/2007-02-11_RSS_Everything), this set of tools is designed to work with RSS (Really Simple Syndication) in a manner consistent with the [Unix philosophy](http://en.wikipedia.org/wiki/Unix_philosophy).
 
 The code committed in this repository was originally old Python code from 2007. It might break your PC, harm your cat, or cause the Flying Spaghetti Monster to lose a meatball.
 
