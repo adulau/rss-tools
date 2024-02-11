@@ -146,9 +146,6 @@ for url in args:
             cleantext = BeautifulSoup(el.summary, "lxml").text
             allitem[linkkey]["title"] = cleantext[: options.summarysize]
 
-            print(allitem[linkkey]["title"])
-
-
 itemlist = []
 
 for something in list(allitem.keys()):
