@@ -14,7 +14,7 @@ def findfeeds(url=None, disable_strict=False):
     if url is None:
         return None
 
-    raw = requests.get(url).text
+    raw = requests.get(url, headers=headers).text
     results = []
     discovered_feeds = []
     html = bs4(raw, features="lxml")
@@ -52,9 +52,12 @@ def findfeeds(url=None, disable_strict=False):
 
 version = "0.2"
 
-feedparser.USER_AGENT = (
-    "rssfind.py " + version + " +https://github.com/adulau/rss-tools"
-)
+user_agent = f"rssfind.py {version} +https://github.com/adulau/rss-tools"
+
+feedparser.USER_AGENT = user_agent
+
+
+headers = {"User-Agent": user_agent}
 
 usage = "Find RSS or Atom feeds from an URL\nusage: %prog [options]"
 
