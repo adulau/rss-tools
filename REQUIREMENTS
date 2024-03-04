@@ -2,3 +2,5 @@ arrow
 bs4
 feedparser
 feedgen
+orjson
+requests

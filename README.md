@@ -15,6 +15,30 @@ As 2024 marks the resurgence of RSS and Atom[^1], I decided to update my rudimen
 
 ## Tools
 
+### rssfind
+
+[rssfind.py](https://github.com/adulau/rss-tools/blob/master/bin/rsscluster.py) is a simple script designed to discover RSS or Atom feeds from a given URL.
+
+It employs two techniques:
+
+- The first involves searching for direct link references to the feed within the HTML page.
+- The second uses a brute-force approach, trying a series of known paths for feeds to determine if they are valid RSS or Atom feeds.
+
+The script returns an array in JSON format containing all the potential feeds it discovers.
+
+~~~shell
+Usage: Find RSS or Atom feeds from an URL
+usage: rssfind.py [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -l LINK, --link=LINK  http link where to find one or more feed source(s)
+  -d, --disable-strict  Include empty feeds in the list, default strict is
+                        enabled
+  -b, --brute-force     Search RSS/Atom feeds by brute-forcing url path
+                        (useful if the page is missing a link entry)
+~~~
+
 ### rsscluster
 
 [rsscluster.py](https://github.com/adulau/rss-tools/blob/master/bin/rsscluster.py) is a simple script that clusters items from an RSS feed based on a specified time interval, expressed in days.
