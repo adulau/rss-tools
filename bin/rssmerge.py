@@ -1,21 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# a at foo dot be - Alexandre Dulaunoy - http://www.foo.be/cgi-bin/wiki.pl/RssAny
+# a at foo dot be - Alexandre Dulaunoy - https://git.foo.be/adulau/rss-tools
 #
-# rssmerge.py is a simple script to gather rss feed and merge them in reverse
-#             time order. Useful to keep track of recent events.
+# rssmerge.py is a simple script designed to aggregate RSS feeds and merge them in reverse chronological order.
+# It outputs the merged content in text, HTML, or Markdown format. This tool is useful for tracking recent events
+# from various feeds and publishing them on your website.
 #
-# this is still an early prototype and assume that you have full control of the
-# remote rss feeds (if not you may have some security issues).
+# Sample usage:
 #
-# TODO : - rss 2.0 and atom output
-#        - full html output
-#
-# example of use :
-#  python3 rssmerge.py --output phtml --maxitem 20 "http://www.foo.be/cgi-bin/wiki.pl?action=journal&tile=AdulauMessyDesk"
-#   "http://api.flickr.com/services/feeds/photos_public.gne?id=31797858@N00&lang=en-us&format=atom" "http://a.6f2.net/cgi-bin/gitweb.cgi?
-#   p=adulau/.git;a=rss" "http://www.librarything.com/rss/reviews/adulau"  > /tmp/test.inc
+# python3 rssmerge.py "https://git.foo.be/adulau.rss"  "http://api.flickr.com/services/feeds/photos_public.gne?id=31797858@N00&lang=en-us&format=atom"
+#  "https://github.com/adulau.atom" -o markdown --maxitem 20
 
 import feedparser
 import sys, os
@@ -25,28 +20,23 @@ import hashlib
 from optparse import OptionParser
 import html
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 feedparser.USER_AGENT = "rssmerge.py +https://github.com/adulau/rss-tools"
 
 
 def RenderMerge(itemlist, output="text"):
-
     i = 0
-
     if output == "text":
         for item in itemlist:
             i = i + 1
             # Keep consistent datetime representation if not use allitem[item[1]]['updated']
-            timetuple = datetime.datetime.fromtimestamp(allitem[item[1]]["epoch"])
-            print(
-                str(i)
-                + ":"
-                + allitem[item[1]]["title"]
-                + ":"
-                + timetuple.ctime()
-                + ":"
-                + allitem[item[1]]["link"]
-            )
+            link = allitem[item[1]]["link"]
+            title = html.escape(allitem[item[1]]["title"])
+            timestamp = datetime.datetime.fromtimestamp(
+                allitem[item[1]]["epoch"]
+            ).ctime()
+            print(f'{i}:{title}:{timestamp}:{link}')
 
             if i == int(options.maxitem):
                 break
@@ -56,16 +46,12 @@ def RenderMerge(itemlist, output="text"):
         for item in itemlist:
             i = i + 1
             # Keep consistent datetime representation if not use allitem[item[1]]['updated']
-            timetuple = datetime.datetime.fromtimestamp(allitem[item[1]]["epoch"])
-            print(
-                '<li><a href="'
-                + str(str(allitem[item[1]]["link"]))
-                + '">'
-                + str(str(html.escape(allitem[item[1]]["title"])))
-                + "</a> --- (<i>"
-                + timetuple.ctime()
-                + "</i>)</li>"
-            )
+            link = allitem[item[1]]["link"]
+            title = html.escape(allitem[item[1]]["title"])
+            timestamp = datetime.datetime.fromtimestamp(
+                allitem[item[1]]["epoch"]
+            ).ctime()
+            print(f'<li><a href="{link}"> {title}</a> --- (<i>{timestamp}</i>)</li>')
             if i == int(options.maxitem):
                 break
         print("</ul>")
@@ -73,14 +59,13 @@ def RenderMerge(itemlist, output="text"):
     if output == "markdown":
         for item in itemlist:
             i = i + 1
-            timetuple = datetime.datetime.fromtimestamp(allitem[item[1]]["epoch"])
-            print(
-                "- ["
-                + str(html.escape(allitem[item[1]]["title"]))
-                + "]("
-                + str(allitem[item[1]]["link"])
-                + ")"
-            )
+            title = html.escape(allitem[item[1]]["title"])
+            link = allitem[item[1]]["link"]
+            timestamp = datetime.datetime.fromtimestamp(
+                allitem[item[1]]["epoch"]
+            ).ctime()
+            domain = urlparse(allitem[item[1]]["link"]).netloc
+            print(f'- {domain} [{title}]({link}) @{timestamp}')
             if i == int(options.maxitem):
                 break
 
@@ -118,9 +103,6 @@ pattern = "%Y-%m-%d %H:%M:%S"
 allitem = {}
 
 for url in args:
-
-    # print url
-
     d = feedparser.parse(url)
 
     for el in d.entries:
