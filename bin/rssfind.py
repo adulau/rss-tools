@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# [rssfind.py](https://github.com/adulau/rss-tools/blob/master/bin/rsscluster.py) is a simple script designed to discover RSS or Atom feeds from a given URL.
+# [rssfind.py](https://github.com/adulau/rss-tools/blob/master/bin/rssfind.py) is a simple script designed to discover RSS or Atom feeds from a given URL.
 #
 # It employs two techniques:
 #
