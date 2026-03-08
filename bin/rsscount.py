@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# a at foo dot be - Alexandre Dulaunoy - https://github.com/adulau/rss-tools
 #
-# a at foo dot be - Alexandre Dulaunoy - http://www.foo.be/cgi-bin/wiki.pl/RssAny
+# RSS/Atom daily counter.
 #
-# rsscount.py is a simple script to count how many items in a RSS feed per day
-#
-# The output is epoch + the number of changes separated with a tab.
-#
-# This is used to build statistic like the wiki creativity index.
-#
+# Reads one or more feeds and prints per-day counts using YYYYMMDD<TAB>COUNT.
+# Useful as a simple input for trend/statistics tooling.
 
 import feedparser
 import time

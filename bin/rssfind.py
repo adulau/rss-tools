@@ -1,12 +1,14 @@
 #!/usr/bin/python3
-# [rssfind.py](https://github.com/adulau/rss-tools/blob/master/bin/rssfind.py) is a simple script designed to discover RSS or Atom feeds from a given URL.
 #
-# It employs two techniques:
+# a at foo dot be - Alexandre Dulaunoy - https://github.com/adulau/rss-tools
+# RSS/Atom feed discovery utility.
 #
-# - The first involves searching for direct link references to the feed within the HTML page.
-# - The second uses a brute-force approach, trying a series of known paths for feeds to determine if they are valid RSS or Atom feeds.
+# Discovery strategy:
+# - Parse HTML for declared alternate feed links and feed-looking anchors.
+# - Optionally brute-force common feed URL paths.
 #
-# The script returns an array in JSON format containing all the potential feeds it discovers.
+# Output is a JSON array of discovered URLs. In strict mode (default), only
+# feeds with entries are returned.
 
 import sys
 import urllib.parse
