@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# a at foo dot be - Alexandre Dulaunoy - https://github.com/adulau/rss-tools
 #
-# a at foo dot be - Alexandre Dulaunoy - https://git.foo.be/adulau/rss-tools
+# Feed merger utility.
 #
-# rssmerge.py is a simple script designed to aggregate RSS feeds and merge them in reverse chronological order.
-# It outputs the merged content in text, HTML, or Markdown format. This tool is useful for tracking recent events
-# from various feeds and publishing them on your website.
-#
-# Sample usage:
-#
-# python3 rssmerge.py "https://git.foo.be/adulau.rss"  "http://api.flickr.com/services/feeds/photos_public.gne?id=31797858@N00&lang=en-us&format=atom"
-#  "https://github.com/adulau.atom" -o markdown --maxitem 20
+# Aggregates entries from multiple RSS/Atom feeds, sorts by date, and prints the
+# merged stream as text, pseudo-HTML list output, or Markdown. Markdown can
+# optionally include an extended content/summary excerpt.
 
 import feedparser
 import time

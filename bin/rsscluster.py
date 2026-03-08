@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# a at foo dot be - Alexandre Dulaunoy - https://github.com/adulau/rss-tools
 #
-# a at foo dot be - Alexandre Dulaunoy - http://www.foo.be/cgi-bin/wiki.pl/RssAny
+# RSS clustering utility.
 #
-# rsscluster.py is a simple script to cluster items from an rss feed based on a
-#               time interval (expressed in number of days). The maxitem is the
-#               number of item maximum after the clustering.
-#
-# an example use is for Mastodon where you can have a lot of toots during
-# one day and you want to cluster them in one single item in RSS or in (X)HTML.
-#
-# example of use :
-#  python3 rsscluster.py --interval 5 --maxitem 20 "https://paperbay.org/@a.rss" >adulau.xml
+# Merges feed entries into time buckets (interval in days) and emits an RSS feed
+# with one item per cluster. Helpful when very active feeds produce many updates
+# in short periods.
 
 import feedparser
 import time

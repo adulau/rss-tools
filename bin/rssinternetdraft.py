@@ -1,8 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# a at foo dot be - Alexandre Dulaunoy - https://github.com/adulau/rss-tools
 #
-# quick-and-dirty(tm) script to gather IETF Internet-Draft announce
-# from a mbox and to generate a nice RSS feed of the recent announce.
+# Legacy helper for generating an RSS feed from IETF Internet-Draft announce
+# messages stored in a local mbox file.
 #
-# for more information : http://www.foo.be/ietf/id/
+# Note: this script is intentionally left close to its original Python 2 era
+# form and depends on /var/spool/mail/ietf.
 
 import mailbox
 import time

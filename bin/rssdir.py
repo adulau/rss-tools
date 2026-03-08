@@ -1,12 +1,11 @@
-# rssdir.py
-# a at foo dot be - Alexandre Dulaunoy - http://www.foo.be/cgi-bin/wiki.pl/RssAny
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# a at foo dot be - Alexandre Dulaunoy - https://github.com/adulau/rss-tools
 #
-# rssdir is a simply-and-dirty script to rssify any directory on the filesystem.
+# Directory-to-feed converter.
 #
-# an example of use on the current directory :
-#
-# python3 /usr/local/bin/rssdir.py --prefix http://www.foo.be/cours/ . >rss.xml
-#
+# Walks a local directory tree and exposes file updates as either RSS (default)
+# or Atom output. Designed for quick static publishing workflows.
 
 import os, fnmatch
 import time
