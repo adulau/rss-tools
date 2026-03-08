@@ -53,7 +53,12 @@ def findfeeds(url=None, disable_strict=False):
         for f in feed_urls:
             tag = f.get("type", None)
             if tag:
-                if "feed" in tag or "rss" in tag or "xml" in tag:
+                if (
+                    "feed" in tag
+                    or "rss" in tag
+                    or "atom" in tag
+                    or "xml" in tag
+                ):
                     href = f.get("href", None)
                     if href:
                         discovered_feeds.append(href)
@@ -63,7 +68,7 @@ def findfeeds(url=None, disable_strict=False):
     for a in ahreftags:
         href = a.get("href", None)
         if href:
-            if "feed" in href or "rss" in href or "xml" in href:
+            if "feed" in href or "rss" in href or "atom" in href or "xml" in href:
                 discovered_feeds.append(urllib.parse.urljoin(url, href))
 
     for url in list(set(discovered_feeds)):
