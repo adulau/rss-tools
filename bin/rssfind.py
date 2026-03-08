@@ -42,9 +42,13 @@ def findfeeds(url=None, disable_strict=False):
         return None
 
     try:
-        raw = requests.get(url, headers=headers, timeout=10).text
+        response = requests.get(
+            url, headers=headers, timeout=10, allow_redirects=True
+        )
     except requests.RequestException:
         return []
+    raw = response.text
+    base_url = response.url
     results = []
     discovered_feeds = []
     html = bs4(raw, features="lxml")
@@ -62,7 +66,9 @@ def findfeeds(url=None, disable_strict=False):
                 ):
                     href = f.get("href", None)
                     if href:
-                        discovered_feeds.append(urllib.parse.urljoin(url, href))
+                        discovered_feeds.append(
+                            urllib.parse.urljoin(base_url, href)
+                        )
 
     ahreftags = html.findAll("a")
 
@@ -76,7 +82,7 @@ def findfeeds(url=None, disable_strict=False):
                 or "atom" in href_lower
                 or "xml" in href_lower
             ):
-                discovered_feeds.append(urllib.parse.urljoin(url, href))
+                discovered_feeds.append(urllib.parse.urljoin(base_url, href))
 
     for url in list(set(discovered_feeds)):
         f = feedparser.parse(url)
@@ -95,15 +101,23 @@ def brutefindfeeds(url=None, disable_strict=False):
         return None
     found_urls = []
     found_valid_feeds = []
-    parsed_url = urllib.parse.urlparse(url)
+    try:
+        base_response = requests.get(
+            url, headers=headers, timeout=10, allow_redirects=True
+        )
+    except requests.RequestException:
+        return []
+    parsed_url = urllib.parse.urlparse(base_response.url)
     for path in brute_force_urls:
         url = f"{parsed_url.scheme}://{parsed_url.hostname}/{path}"
         try:
-            r = requests.get(url, headers=headers, timeout=10)
+            r = requests.get(
+                url, headers=headers, timeout=10, allow_redirects=True
+            )
         except requests.RequestException:
             continue
         if r.status_code == 200:
-            found_urls.append(url)
+            found_urls.append(r.url)
     for url in list(set(found_urls)):
         f = feedparser.parse(url)
         if f.entries:
