@@ -8,6 +8,7 @@
 # or Atom output. Designed for quick static publishing workflows.
 
 import os, fnmatch
+import socket
 import time
 import sys
 import xml.etree.ElementTree as ET
@@ -129,7 +130,7 @@ parser.add_option(
     "-t",
     "--title",
     dest="title",
-    help="set a title to the rss feed, default using prefix",
+    help="set a title to the rss feed, default using directory and hostname",
     type="string",
 )
 parser.add_option(
@@ -179,11 +180,6 @@ if options.link is None:
 else:
     link = options.link
 
-if options.title is None:
-    title = options.prefix
-else:
-    title = options.title
-
 if options.maxitem is None:
     maxitem = 32
 else:
@@ -194,8 +190,17 @@ if not args:
     parser.print_help()
     sys.exit(0)
 
+source_directory = args[0]
+
+if options.title is None:
+    directory_name = os.path.basename(os.path.abspath(source_directory))
+    system_name = socket.gethostname()
+    title = f"{directory_name} on {system_name}"
+else:
+    title = options.title
+
 file_to_list = []
-for x in all_files(args[0]):
+for x in all_files(source_directory):
     file_to_list.append(x)
 
 mylist = date_files(file_to_list)
