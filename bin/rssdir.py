@@ -47,6 +47,10 @@ def date_as_rfc(value):
     return time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.localtime(value))
 
 
+def date_as_atom(value):
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(value))
+
+
 def build_rss(myitem, maxitem):
 
     RSSroot = ET.Element("rss", {"version": "2.0"})
@@ -70,8 +74,39 @@ def build_rss(myitem, maxitem):
         ET.SubElement(RSSitem, "description").text = prefixurl + bloodyitem[1]
         ET.SubElement(RSSitem, "guid").text = prefixurl + bloodyitem[1]
 
-    RSSfeed = ET.ElementTree(RSSroot)
-    feed = ET.tostring(RSSroot)
+    feed = ET.tostring(RSSroot, encoding="unicode")
+    return feed
+
+
+def build_atom(myitem, maxitem):
+
+    atom_ns = "http://www.w3.org/2005/Atom"
+    ET.register_namespace("", atom_ns)
+
+    atom_root = ET.Element("{%s}feed" % atom_ns)
+
+    ET.SubElement(atom_root, "{%s}title" % atom_ns).text = "RSS feed of " + str(title)
+
+    ET.SubElement(atom_root, "{%s}link" % atom_ns, {"href": link})
+    ET.SubElement(atom_root, "{%s}id" % atom_ns).text = link or (prefixurl + str(title))
+    ET.SubElement(atom_root, "{%s}updated" % atom_ns).text = date_as_atom(time.time())
+    ET.SubElement(atom_root, "{%s}generator" % atom_ns).text = (
+        "A directory RSSified by rssdir.py " + version
+    )
+
+    for bloodyitem in myitem[0:maxitem]:
+
+        atom_entry = ET.SubElement(atom_root, "{%s}entry" % atom_ns)
+        ET.SubElement(atom_entry, "{%s}title" % atom_ns).text = bloodyitem[1]
+        entry_url = prefixurl + bloodyitem[1]
+        ET.SubElement(atom_entry, "{%s}link" % atom_ns, {"href": entry_url})
+        ET.SubElement(atom_entry, "{%s}id" % atom_ns).text = entry_url
+        ET.SubElement(atom_entry, "{%s}updated" % atom_ns).text = date_as_atom(
+            bloodyitem[0]
+        )
+        ET.SubElement(atom_entry, "{%s}summary" % atom_ns).text = entry_url
+
+    feed = ET.tostring(atom_root, encoding="unicode")
     return feed
 
 
@@ -112,8 +147,28 @@ parser.add_option(
     default=32,
     type="int",
 )
+parser.set_defaults(output_format="rss")
+parser.add_option(
+    "--rss",
+    action="store_const",
+    const="rss",
+    dest="output_format",
+    help="generate RSS output (default format)",
+)
+parser.add_option(
+    "--atom",
+    action="store_const",
+    const="atom",
+    dest="output_format",
+    help="generate Atom output",
+)
 
 (options, args) = parser.parse_args()
+
+if "--rss" in sys.argv and "--atom" in sys.argv:
+    print("Please choose either --rss or --atom")
+    parser.print_help()
+    sys.exit(1)
 
 if options.prefix is None:
     prefixurl = ""
@@ -149,4 +204,7 @@ mylist = date_files(file_to_list)
 mylist.sort()
 mylist.reverse()
 
-print(complete_feed(build_rss(mylist, maxitem)))
+if options.output_format == "atom":
+    print(complete_feed(build_atom(mylist, maxitem)))
+else:
+    print(complete_feed(build_rss(mylist, maxitem)))
