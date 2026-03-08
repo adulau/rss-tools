@@ -14,7 +14,6 @@
 #  python3 rsscluster.py --interval 5 --maxitem 20 "https://paperbay.org/@a.rss" >adulau.xml
 
 import feedparser
-import sys, os
 import time
 import datetime
 import xml.etree.ElementTree as ET
@@ -100,9 +99,8 @@ pattern = "%Y-%m-%d %H:%M:%S"
 
 if options.interval is None:
     options.interval = 1
-    options.output = 1
 
-if options.maxitem == None:
+if options.maxitem is None:
     options.maxitem = 200
 
 
@@ -114,9 +112,6 @@ allitem = {}
 url = args[0]
 
 d = feedparser.parse(url)
-
-if options.interval is None:
-    options.interval = 0
 
 interval = DaysInSec(options.interval)
 
