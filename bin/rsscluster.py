@@ -169,7 +169,7 @@ for el in d.entries:
     previousepoch.append(elepoch)
 
 # if last cluster list was not complete, we add the time period information.
-if len(previousepoch):
+if len(previousepoch) and len(clusteredepoch):
     value = clusteredepoch.pop()
     starttimetuple = datetime.datetime.fromtimestamp(previousepoch[0])
     endttimetuple = datetime.datetime.fromtimestamp(previousepoch.pop())
@@ -180,7 +180,10 @@ if len(previousepoch):
         + " to: "
         + str(endttimetuple.ctime())
     )
+    startdatelist = str(starttimetuple.strftime(pattern)), str(clusteredepoch[-1])
+    tcluster.append(startdatelist)
     del previousepoch[0 : len(previousepoch)]
+    del clusteredepoch[0 : len(clusteredepoch)]
 
 
 tcluster.sort()
