@@ -157,15 +157,12 @@ if not options.link:
     parser.print_help()
     sys.exit(0)
 
-if not options.brute_force:
-    print(
-        json.dumps(
-            findfeeds(url=options.link, disable_strict=options.disable_strict)
-        ).decode("utf-8")
+feeds = findfeeds(url=options.link, disable_strict=options.disable_strict)
+
+if options.brute_force:
+    brute_force_feeds = brutefindfeeds(
+        url=options.link, disable_strict=options.disable_strict
     )
-else:
-    print(
-        json.dumps(
-            brutefindfeeds(url=options.link, disable_strict=options.disable_strict)
-        ).decode("utf-8")
-    )
+    feeds = list(set(feeds + brute_force_feeds))
+
+print(json.dumps(feeds).decode("utf-8"))
