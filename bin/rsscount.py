@@ -11,7 +11,6 @@
 #
 
 import feedparser
-import sys, os
 import time
 import datetime
 from optparse import OptionParser
@@ -23,8 +22,9 @@ parser = OptionParser(usage)
 
 (options, args) = parser.parse_args()
 
-if args is None:
-    print(usage)
+if not args:
+    parser.print_help()
+    raise SystemExit(1)
 
 counteditem = {}
 
@@ -33,14 +33,12 @@ for url in args:
     d = feedparser.parse(url)
     for el in d.entries:
 
-        if "modified_parsed" in el:
-            eldatetime = datetime.datetime.fromtimestamp(
-                time.mktime(el.modified_parsed)
-            )
-        else:
-            eldatetime = datetime.datetime.fromtimestamp(
-                time.mktime(el.published_parsed)
-            )
+        parsed_date = getattr(el, "modified_parsed", None) or getattr(
+            el, "published_parsed", None
+        ) or getattr(el, "updated_parsed", None)
+        if not parsed_date:
+            continue
+        eldatetime = datetime.datetime.fromtimestamp(time.mktime(parsed_date))
         eventdate = eldatetime.isoformat(" ").split(" ", 1)
         edate = eventdate[0].replace("-", "")
 

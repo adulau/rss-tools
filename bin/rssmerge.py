@@ -13,7 +13,6 @@
 #  "https://github.com/adulau.atom" -o markdown --maxitem 20
 
 import feedparser
-import sys, os
 import time
 import datetime
 import hashlib
@@ -70,6 +69,14 @@ def RenderMerge(itemlist, output="text"):
                 break
 
 
+def parse_entry_epoch(entry):
+    for date_attr in ("modified_parsed", "published_parsed", "updated_parsed"):
+        parsed_date = getattr(entry, date_attr, None)
+        if parsed_date:
+            return int(time.mktime(parsed_date))
+    return 0
+
+
 usage = "usage: %prog [options] url"
 parser = OptionParser(usage)
 
@@ -95,9 +102,6 @@ parser.add_option(
     help="output format (text, phtml, markdown), default text",
 )
 
-# 2007-11-10 11:25:51
-pattern = "%Y-%m-%d %H:%M:%S"
-
 (options, args) = parser.parse_args()
 
 allitem = {}
@@ -106,27 +110,19 @@ for url in args:
     d = feedparser.parse(url)
 
     for el in d.entries:
-        if "modified_parsed" in el:
-            eldatetime = datetime.datetime.fromtimestamp(
-                time.mktime(el.modified_parsed)
-            )
-        else:
-            eldatetime = datetime.datetime.fromtimestamp(
-                time.mktime(el.published_parsed)
-            )
-        elepoch = int(time.mktime(time.strptime(str(eldatetime), pattern)))
+        elepoch = parse_entry_epoch(el)
         h = hashlib.md5()
         h.update(el.link.encode("utf-8"))
         linkkey = h.hexdigest()
         allitem[linkkey] = {}
         allitem[linkkey]["link"] = str(el.link)
         allitem[linkkey]["epoch"] = int(elepoch)
-        allitem[linkkey]["updated"] = el.updated
+        allitem[linkkey]["updated"] = getattr(el, "updated", "")
         if "title" in el:
             allitem[linkkey]["title"] = html.unescape(el.title)
         else:
-            cleantext = BeautifulSoup(el.summary, "lxml").text
-            allitem[linkkey]["title"] = cleantext[: options.summarysize]
+            cleantext = BeautifulSoup(getattr(el, "summary", ""), "lxml").text
+            allitem[linkkey]["title"] = cleantext[: int(options.summarysize)]
 
 itemlist = []
 

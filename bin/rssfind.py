@@ -41,7 +41,10 @@ def findfeeds(url=None, disable_strict=False):
     if url is None:
         return None
 
-    raw = requests.get(url, headers=headers).text
+    try:
+        raw = requests.get(url, headers=headers, timeout=10).text
+    except requests.RequestException:
+        return []
     results = []
     discovered_feeds = []
     html = bs4(raw, features="lxml")
@@ -55,15 +58,13 @@ def findfeeds(url=None, disable_strict=False):
                     if href:
                         discovered_feeds.append(href)
 
-    parsed_url = urllib.parse.urlparse(url)
-    base = f"{parsed_url.scheme}://{parsed_url.hostname}"
     ahreftags = html.findAll("a")
 
     for a in ahreftags:
         href = a.get("href", None)
         if href:
             if "feed" in href or "rss" in href or "xml" in href:
-                discovered_feeds.append(f"{base}{href}")
+                discovered_feeds.append(urllib.parse.urljoin(url, href))
 
     for url in list(set(discovered_feeds)):
         f = feedparser.parse(url)
@@ -85,7 +86,10 @@ def brutefindfeeds(url=None, disable_strict=False):
     parsed_url = urllib.parse.urlparse(url)
     for path in brute_force_urls:
         url = f"{parsed_url.scheme}://{parsed_url.hostname}/{path}"
-        r = requests.get(url, headers=headers)
+        try:
+            r = requests.get(url, headers=headers, timeout=10)
+        except requests.RequestException:
+            continue
         if r.status_code == 200:
             found_urls.append(url)
     for url in list(set(found_urls)):
@@ -121,7 +125,7 @@ parser.add_option(
 parser.add_option(
     "-d",
     "--disable-strict",
-    action="store_false",
+    action="store_true",
     default=False,
     help="Include empty feeds in the list, default strict is enabled",
 )
