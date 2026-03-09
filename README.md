@@ -18,6 +18,13 @@ As 2024 marks the resurgence of RSS and Atom[^1], I decided to update my rudimen
 
 ## Tools
 
+- **rssfind** – Discover RSS/Atom feeds from a given website by parsing HTML links or brute-forcing common feed paths.
+- **rsscluster** – Group RSS feed items into time-based clusters to summarize activity within a defined interval.
+- **rssmerge** – Aggregate multiple RSS/Atom feeds and merge their items into a single chronological or randomized output.
+- **rssdir** – Generate an RSS or Atom feed automatically from the contents of a filesystem directory.
+- **rsscount** – Count the number of feed entries per day across one or more RSS feeds to produce activity statistics.
+- **rssinternetdraft (legacy)** – Convert IETF Internet-Draft announcement emails from a mailbox into an RSS feed.
+
 ### rssfind
 
 [`rssfind.py`](https://github.com/adulau/rss-tools/blob/master/bin/rssfind.py) discovers RSS/Atom feeds from a given URL.
@@ -150,7 +157,7 @@ python3 rsscount.py https://paperbay.org/@a.rss | sort
 
 rss-tools are open source/free software licensed under the permissive 2-clause BSD license.
 
-Copyright 2007-2024 Alexandre Dulaunoy
+Copyright 2007-2026 Alexandre Dulaunoy
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
