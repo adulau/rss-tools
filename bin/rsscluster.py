@@ -175,7 +175,7 @@ if len(previousepoch) and len(clusteredepoch):
         + " to: "
         + str(endttimetuple.ctime())
     )
-    startdatelist = str(starttimetuple.strftime(pattern)), str(clusteredepoch[-1])
+    startdatelist = str(previousepoch[0]), str(clusteredepoch[-1])
     tcluster.append(startdatelist)
     del previousepoch[0 : len(previousepoch)]
     del clusteredepoch[0 : len(clusteredepoch)]
