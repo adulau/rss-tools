@@ -12,6 +12,7 @@ import feedparser
 import time
 import datetime
 import hashlib
+import random
 from optparse import OptionParser
 import html
 from bs4 import BeautifulSoup
@@ -111,6 +112,14 @@ parser.add_option(
     help="output format (text, phtml, markdown), default text",
 )
 parser.add_option(
+    "-r",
+    "--randomize",
+    action="store_true",
+    dest="randomize",
+    default=False,
+    help="randomize merged items instead of date-sorted output",
+)
+parser.add_option(
     "--markdown-extended",
     action="store_true",
     dest="markdown_extended",
@@ -155,5 +164,8 @@ for something in list(allitem.keys()):
 
 itemlist.sort()
 itemlist.reverse()
+
+if options.randomize:
+    random.shuffle(itemlist)
 
 RenderMerge(itemlist, options.output)
