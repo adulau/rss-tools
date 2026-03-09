@@ -51,7 +51,7 @@ rsscluster.py --interval 2 --maxitem 20 "http://paperbay.org/@a.rss" > adulau.xm
 
 ### rssmerge
 
-[`rssmerge.py`](https://github.com/adulau/rss-tools/blob/master/bin/rssmerge.py) aggregates multiple RSS/Atom feeds and merges items in reverse chronological order.
+[`rssmerge.py`](https://github.com/adulau/rss-tools/blob/master/bin/rssmerge.py) aggregates multiple RSS/Atom feeds and merges items in reverse chronological order. Use `--randomize` to shuffle merged items instead of sorting by date.
 
 Supported output formats:
 
@@ -82,6 +82,7 @@ Options:
                         maximum size of the summary if a title is not present
   -o OUTPUT, --output=OUTPUT
                         output format (text, phtml, markdown), default text
+  -r, --randomize       randomize merged items instead of date-sorted output
   --markdown-extended   include extended summary/content text in markdown output
   --markdown-extended-size=MARKDOWN_EXTENDED_SIZE
                         maximum size of extended text in markdown output, default 1000
