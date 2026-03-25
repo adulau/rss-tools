@@ -13,7 +13,7 @@ As 2024 marks the resurgence of RSS and Atom[^1], I decided to update my rudimen
 * Python 3
 * feedparser
 * requests (for `rssfind.py`)
-* beautifulsoup4 + lxml (for `rssfind.py` and `rssmerge.py`)
+* beautifulsoup4 + lxml (for `rssfind.py`, `rssmerge.py`, and `rssjournal.py`)
 * orjson (for `rssfind.py` JSON output)
 
 ## Tools
@@ -24,6 +24,7 @@ As 2024 marks the resurgence of RSS and Atom[^1], I decided to update my rudimen
 - **rssdir** – Generate an RSS or Atom feed automatically from the contents of a filesystem directory.
 - **rsscount** – Count the number of feed entries per day across one or more RSS feeds to produce activity statistics.
 - **rssinternetdraft (legacy)** – Convert IETF Internet-Draft announcement emails from a mailbox into an RSS feed.
+- **rssjournal** – Build daily Markdown journal pages from one or more feeds and maintain yearly index pages.
 
 ### rssfind
 
@@ -100,6 +101,36 @@ Options:
 ```markdown
 - paperbay.org [harvesting society #street #streetphotography #paris #societ](https://paperbay.org/@a/111908018263388808) @Wed Feb 21 20:04:57 2024
 - www.flickr.com [harvesting society](https://www.flickr.com/photos/adulau/53520731553/) @Wed Feb 21 19:48:15 2024
+```
+
+
+### rssjournal
+
+[`rssjournal.py`](https://github.com/adulau/rss-tools/blob/master/bin/rssjournal.py) stores merged feed entries into Markdown files per day (`YYYY-MM-DD.md`) and creates/updates yearly index pages (`YYYY.md`).
+
+The destination files are read before writing to:
+
+- preserve already-written historical content even if it disappears from feeds;
+- avoid adding duplicate entries already present in the Markdown pages.
+
+```shell
+python3 rssjournal.py --destination ./journal \
+  "http://paperbay.org/@a.rss" "http://infosec.exchange/@adulau.rss"
+```
+
+```shell
+Usage: rssjournal.py [options] url
+
+Options:
+  -h, --help            show this help message and exit
+  -m MAXITEM, --maxitem=MAXITEM
+                        maximum item to process from merged feed entries,
+                        default 200
+  -s SUMMARYSIZE, --summarysize=SUMMARYSIZE
+                        maximum size of the summary if a title is not present
+  -d DESTINATION, --destination=DESTINATION
+                        destination directory for markdown journal files,
+                        default current directory
 ```
 
 ### rssdir
