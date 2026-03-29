@@ -53,15 +53,19 @@ def read_existing_links(path):
     return links
 
 
-def ensure_daily_file(path, day_key):
+def build_front_matter(title):
+    return f"---\nlayout: page\ntitle: {title}\n---\n\n"
+
+
+def ensure_daily_file(path, day_key, title_prefix):
     if os.path.exists(path):
         return
     with open(path, "w", encoding="utf-8") as fobj:
-        fobj.write(f"# {day_key}\n\n")
+        fobj.write(build_front_matter(f"{day_key}{title_prefix}"))
 
 
-def append_new_entries(path, day_key, entries):
-    ensure_daily_file(path, day_key)
+def append_new_entries(path, day_key, entries, title_prefix):
+    ensure_daily_file(path, day_key, title_prefix)
     existing_links = read_existing_links(path)
 
     new_lines = []
@@ -101,12 +105,12 @@ def count_links(path):
     return len(read_existing_links(path))
 
 
-def update_year_index(destination, year):
+def update_year_index(destination, year, title_prefix):
     pages = list_day_files(destination, year)
     index_path = os.path.join(destination, f"{year}.md")
 
     with open(index_path, "w", encoding="utf-8") as fobj:
-        fobj.write(f"# {year} Journal Index\n\n")
+        fobj.write(build_front_matter(f"{year}{title_prefix}"))
         if not pages:
             fobj.write("No entries yet.\n")
             return
@@ -142,7 +146,7 @@ def collect_entries(urls, summarysize):
     return list(allitem.values())
 
 
-def write_journal(entries, destination, maxitem):
+def write_journal(entries, destination, maxitem, title_prefix):
     day_entries = defaultdict(list)
 
     sorted_entries = sorted(entries, key=lambda x: x["epoch"], reverse=True)
@@ -158,13 +162,13 @@ def write_journal(entries, destination, maxitem):
 
     for day_key, items in sorted(day_entries.items(), reverse=True):
         file_path = os.path.join(destination, f"{day_key}.md")
-        added = append_new_entries(file_path, day_key, items)
+        added = append_new_entries(file_path, day_key, items, title_prefix)
         if added:
             updated.append((day_key, added))
 
     years = {day.split("-")[0] for day in day_entries.keys()}
     for year in years:
-        update_year_index(destination, year)
+        update_year_index(destination, year, title_prefix)
 
     return updated
 
@@ -193,6 +197,13 @@ parser.add_option(
     default=".",
     help="destination directory for markdown journal files, default current directory",
 )
+parser.add_option(
+    "-p",
+    "--title-prefix",
+    dest="title_prefix",
+    default=" Journal",
+    help='title suffix for generated markdown pages, default " Journal"',
+)
 
 (options, args) = parser.parse_args()
 
@@ -200,7 +211,12 @@ if not args:
     parser.error("at least one RSS/Atom URL is required")
 
 entries = collect_entries(args, int(options.summarysize))
-changes = write_journal(entries, options.destination, int(options.maxitem))
+changes = write_journal(
+    entries,
+    options.destination,
+    int(options.maxitem),
+    options.title_prefix,
+)
 
 for day, count in changes:
     print(f"updated {day}.md with {count} new item(s)")
