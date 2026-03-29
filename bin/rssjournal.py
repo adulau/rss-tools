@@ -39,7 +39,9 @@ def sanitize_title(entry, summarysize):
     if "title" in entry:
         return html.unescape(entry.title)
     cleantext = BeautifulSoup(getattr(entry, "summary", ""), "lxml").text
-    return cleantext[: int(summarysize)]
+    if int(summarysize) > 0:
+        return cleantext[: int(summarysize)]
+    return cleantext
 
 
 def read_existing_links(path):
@@ -187,8 +189,11 @@ parser.add_option(
     "-s",
     "--summarysize",
     dest="summarysize",
-    default=60,
-    help="maximum size of the summary if a title is not present",
+    default=0,
+    help=(
+        "optional max length for fallback summary text when a title is "
+        "missing (0 keeps full text, default 0)"
+    ),
 )
 parser.add_option(
     "-d",
