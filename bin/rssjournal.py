@@ -31,7 +31,17 @@ def html_to_markdown(text):
     if not text:
         return ""
 
-    soup = BeautifulSoup(text, "lxml")
+    # Some Atom feeds (e.g. Flickr) store HTML content with escaped tags
+    # in <content type="html"> payloads. Unescape a few times so the parser
+    # can see real HTML nodes such as <a> and <img>.
+    normalized = text
+    for _ in range(3):
+        unescaped = html.unescape(normalized)
+        if unescaped == normalized:
+            break
+        normalized = unescaped
+
+    soup = BeautifulSoup(normalized, "lxml")
     root = soup.body if soup.body else soup
 
     def render(node):
@@ -51,6 +61,12 @@ def html_to_markdown(text):
             label = children.strip() or node.get("href", "")
             href = node.get("href", "")
             return f"[{label}]({href})" if href else label
+        if name == "img":
+            src = node.get("src", "").strip()
+            alt = html.unescape(node.get("alt", "")).strip()
+            if src:
+                return f"![{alt}]({src})"
+            return ""
         if name == "br":
             return "\n"
         if name in {"p", "div"}:
@@ -86,6 +102,9 @@ def compact_markdown_description(text, max_words=60):
         return ""
 
     compact = " ".join(lines)
+    # Keep embedded images in summary output so photo-centric feeds are useful.
+    compact = re.sub(r"\s*!\[", " ![", compact)
+    compact = re.sub(r"\]\(([^)]+)\)", r"](\1)", compact)
     words = compact.split()
     if len(words) <= max_words:
         return compact
@@ -122,7 +141,19 @@ def extract_entry_description(entry):
     if not html_payload:
         html_payload = getattr(entry, "summary", "") or getattr(entry, "description", "")
 
-    return html_to_markdown(html_payload)
+    markdown_description = html_to_markdown(html_payload)
+
+    if markdown_description:
+        return markdown_description
+
+    # Fallback for media-first Atom feeds that only expose enclosure links.
+    for link in getattr(entry, "links", []):
+        if getattr(link, "rel", "") == "enclosure" and getattr(link, "href", ""):
+            media_type = getattr(link, "type", "")
+            if media_type.startswith("image/") or not media_type:
+                return f"![{sanitize_title(entry, 0)}]({link.href})"
+
+    return ""
 
 
 def read_existing_links(path):
