@@ -70,6 +70,28 @@ def html_to_markdown(text):
     return markdown
 
 
+def compact_markdown_description(text, max_words=60):
+    if not text:
+        return ""
+
+    lines = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        # Keep list items readable but remove deep indentation/noise.
+        lines.append(stripped if stripped.startswith("- ") else stripped.lstrip("- ").strip())
+
+    if not lines:
+        return ""
+
+    compact = " ".join(lines)
+    words = compact.split()
+    if len(words) <= max_words:
+        return compact
+    return f'{" ".join(words[:max_words])}…'
+
+
 def parse_entry_epoch(entry):
     for date_attr in ("modified_parsed", "published_parsed", "updated_parsed"):
         parsed_date = getattr(entry, date_attr, None)
@@ -135,15 +157,13 @@ def append_new_entries(path, day_key, entries, title_prefix):
             continue
         timestamp = datetime.datetime.fromtimestamp(entry["epoch"]).strftime("%H:%M:%S")
         domain = urlparse(entry["link"]).netloc
-        line = f'- [{entry["title"]}]({entry["link"]}) @ {timestamp} ({domain})\n'
-        new_lines.append(line)
-        if entry["description"]:
-            for desc_line in entry["description"].splitlines():
-                if desc_line.strip():
-                    new_lines.append(f"  {desc_line}\n")
-                else:
-                    new_lines.append("\n")
-            new_lines.append("\n")
+        new_lines.append(f'### [{entry["title"]}]({entry["link"]})\n\n')
+        new_lines.append(f"- Source: `{domain}`\n")
+        new_lines.append(f"- Time: `{timestamp}`\n")
+        compact_description = compact_markdown_description(entry["description"])
+        if compact_description:
+            new_lines.append(f"- Summary: {compact_description}\n")
+        new_lines.append("\n---\n\n")
 
     if not new_lines:
         return 0
