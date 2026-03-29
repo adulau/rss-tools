@@ -25,6 +25,8 @@ feedparser.USER_AGENT = "rssjournal.py +https://github.com/adulau/rss-tools"
 
 
 LINK_PATTERN = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+SOURCE_PATTERN = re.compile(r"^- Source:\s+`([^`]+)`\s*$")
+DAY_FILE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
 
 
 def html_to_markdown(text):
@@ -224,9 +226,24 @@ def count_links(path):
     return len(read_existing_links(path))
 
 
+def count_sources(path):
+    sources = defaultdict(int)
+    if not os.path.exists(path):
+        return sources
+
+    with open(path, "r", encoding="utf-8") as fobj:
+        for raw_line in fobj:
+            match = SOURCE_PATTERN.match(raw_line.strip())
+            if match:
+                sources[match.group(1)] += 1
+    return sources
+
+
 def update_year_index(destination, year, title_prefix, link_extension):
     pages = list_day_files(destination, year)
     index_path = os.path.join(destination, f"{year}.md")
+    source_stats = defaultdict(int)
+    total_items = 0
 
     with open(index_path, "w", encoding="utf-8") as fobj:
         fobj.write(build_front_matter(f"{year}{title_prefix}"))
@@ -234,12 +251,55 @@ def update_year_index(destination, year, title_prefix, link_extension):
             fobj.write("No entries yet.\n")
             return
 
+        fobj.write("## Yearly statistics\n\n")
         for page in pages:
             full_path = os.path.join(destination, page)
             page_day = page[:-3]
             entries_count = count_links(full_path)
+            total_items += entries_count
+            for source, source_count in count_sources(full_path).items():
+                source_stats[source] += source_count
             fobj.write(
                 f"- [{page_day}]({page_day}{link_extension}) - {entries_count} item(s)\n"
+            )
+
+        fobj.write("\n")
+        fobj.write(f"- Total entries: {total_items}\n")
+        fobj.write(f"- Active days: {len(pages)}\n")
+        fobj.write(f"- Distinct sources: {len(source_stats)}\n")
+
+        if source_stats:
+            fobj.write("\n### Source breakdown\n\n")
+            for source, count in sorted(
+                source_stats.items(), key=lambda item: (-item[1], item[0])
+            ):
+                fobj.write(f"- `{source}`: {count} item(s)\n")
+
+
+def list_years_from_days(destination):
+    years = set()
+    for filename in os.listdir(destination):
+        if DAY_FILE_PATTERN.match(filename):
+            years.add(filename[:4])
+    return sorted(years)
+
+
+def update_global_index(destination, years, title_prefix, link_extension):
+    index_path = os.path.join(destination, "index.md")
+    with open(index_path, "w", encoding="utf-8") as fobj:
+        fobj.write(build_front_matter(f"Journal index{title_prefix}"))
+        if not years:
+            fobj.write("No yearly pages yet.\n")
+            return
+
+        for year in sorted(years, reverse=True):
+            day_files = list_day_files(destination, year)
+            item_count = 0
+            for day_file in day_files:
+                item_count += count_links(os.path.join(destination, day_file))
+            fobj.write(
+                f"- [{year}]({year}{link_extension}) - {len(day_files)} day(s), "
+                f"{item_count} item(s)\n"
             )
 
 
@@ -288,9 +348,10 @@ def write_journal(entries, destination, maxitem, title_prefix, link_extension):
         if added:
             updated.append((day_key, added))
 
-    years = {day.split("-")[0] for day in day_entries.keys()}
+    years = list_years_from_days(destination)
     for year in years:
         update_year_index(destination, year, title_prefix, link_extension)
+    update_global_index(destination, years, title_prefix, link_extension)
 
     return updated
 
