@@ -107,7 +107,7 @@ def count_links(path):
     return len(read_existing_links(path))
 
 
-def update_year_index(destination, year, title_prefix):
+def update_year_index(destination, year, title_prefix, link_extension):
     pages = list_day_files(destination, year)
     index_path = os.path.join(destination, f"{year}.md")
 
@@ -121,7 +121,9 @@ def update_year_index(destination, year, title_prefix):
             full_path = os.path.join(destination, page)
             page_day = page[:-3]
             entries_count = count_links(full_path)
-            fobj.write(f"- [{page_day}]({page}) - {entries_count} item(s)\n")
+            fobj.write(
+                f"- [{page_day}]({page_day}{link_extension}) - {entries_count} item(s)\n"
+            )
 
 
 def collect_entries(urls, summarysize):
@@ -148,7 +150,7 @@ def collect_entries(urls, summarysize):
     return list(allitem.values())
 
 
-def write_journal(entries, destination, maxitem, title_prefix):
+def write_journal(entries, destination, maxitem, title_prefix, link_extension):
     day_entries = defaultdict(list)
 
     sorted_entries = sorted(entries, key=lambda x: x["epoch"], reverse=True)
@@ -170,7 +172,7 @@ def write_journal(entries, destination, maxitem, title_prefix):
 
     years = {day.split("-")[0] for day in day_entries.keys()}
     for year in years:
-        update_year_index(destination, year, title_prefix)
+        update_year_index(destination, year, title_prefix, link_extension)
 
     return updated
 
@@ -209,6 +211,13 @@ parser.add_option(
     default=" Journal",
     help='title suffix for generated markdown pages, default " Journal"',
 )
+parser.add_option(
+    "-e",
+    "--extension",
+    dest="extension",
+    default=".html",
+    help='extension used for day links in the yearly index, default ".html"',
+)
 
 (options, args) = parser.parse_args()
 
@@ -216,11 +225,13 @@ if not args:
     parser.error("at least one RSS/Atom URL is required")
 
 entries = collect_entries(args, int(options.summarysize))
+link_extension = options.extension if options.extension.startswith(".") else f".{options.extension}"
 changes = write_journal(
     entries,
     options.destination,
     int(options.maxitem),
     options.title_prefix,
+    link_extension,
 )
 
 for day, count in changes:
