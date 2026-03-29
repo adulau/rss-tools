@@ -27,6 +27,49 @@ feedparser.USER_AGENT = "rssjournal.py +https://github.com/adulau/rss-tools"
 LINK_PATTERN = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 
 
+def html_to_markdown(text):
+    if not text:
+        return ""
+
+    soup = BeautifulSoup(text, "lxml")
+    root = soup.body if soup.body else soup
+
+    def render(node):
+        if isinstance(node, str):
+            return html.unescape(node)
+
+        name = (node.name or "").lower()
+        children = "".join(render(child) for child in node.children)
+
+        if name in {"strong", "b"}:
+            return f"**{children.strip()}**" if children.strip() else ""
+        if name in {"em", "i"}:
+            return f"*{children.strip()}*" if children.strip() else ""
+        if name == "code":
+            return f"`{children.strip()}`" if children.strip() else ""
+        if name == "a":
+            label = children.strip() or node.get("href", "")
+            href = node.get("href", "")
+            return f"[{label}]({href})" if href else label
+        if name == "br":
+            return "\n"
+        if name in {"p", "div"}:
+            content = children.strip()
+            return f"{content}\n\n" if content else ""
+        if name in {"ul", "ol"}:
+            return f"{children}\n" if children.strip() else ""
+        if name == "li":
+            content = children.strip()
+            return f"- {content}\n" if content else ""
+        if name in {"script", "style"}:
+            return ""
+        return children
+
+    markdown = "".join(render(child) for child in root.children)
+    markdown = re.sub(r"\n{3,}", "\n\n", markdown).strip()
+    return markdown
+
+
 def parse_entry_epoch(entry):
     for date_attr in ("modified_parsed", "published_parsed", "updated_parsed"):
         parsed_date = getattr(entry, date_attr, None)
@@ -42,6 +85,22 @@ def sanitize_title(entry, summarysize):
     if int(summarysize) > 0:
         return cleantext[: int(summarysize)]
     return cleantext
+
+
+def extract_entry_description(entry):
+    html_payload = ""
+
+    if "content" in entry and entry.content:
+        for content in entry.content:
+            value = getattr(content, "value", "")
+            if value:
+                html_payload = value
+                break
+
+    if not html_payload:
+        html_payload = getattr(entry, "summary", "") or getattr(entry, "description", "")
+
+    return html_to_markdown(html_payload)
 
 
 def read_existing_links(path):
@@ -78,6 +137,13 @@ def append_new_entries(path, day_key, entries, title_prefix):
         domain = urlparse(entry["link"]).netloc
         line = f'- [{entry["title"]}]({entry["link"]}) @ {timestamp} ({domain})\n'
         new_lines.append(line)
+        if entry["description"]:
+            for desc_line in entry["description"].splitlines():
+                if desc_line.strip():
+                    new_lines.append(f"  {desc_line}\n")
+                else:
+                    new_lines.append("\n")
+            new_lines.append("\n")
 
     if not new_lines:
         return 0
@@ -145,6 +211,7 @@ def collect_entries(urls, summarysize):
                 "link": str(el.link),
                 "epoch": int(epoch),
                 "title": sanitize_title(el, summarysize),
+                "description": extract_entry_description(el),
             }
 
     return list(allitem.values())
