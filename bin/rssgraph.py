@@ -10,15 +10,22 @@
 import calendar
 import datetime
 import time
+import warnings
 from collections import defaultdict
 from optparse import OptionParser
 
 import feedparser
 import matplotlib.pyplot as plt
-from matplotlib import cm
+from matplotlib import cm, colormaps
+from matplotlib.colors import Normalize
 from matplotlib.gridspec import GridSpec
 
 feedparser.USER_AGENT = "rssgraph.py +https://github.com/adulau/rss-tools"
+warnings.filterwarnings(
+    "ignore",
+    message="Unable to import Axes3D.",
+    category=UserWarning,
+)
 
 
 def parse_yyyymmdd(value):
@@ -69,7 +76,7 @@ def render_year(fig, parent_spec, year, counts, cmap_name, max_value):
     title_ax.set_axis_off()
     title_ax.set_title(str(year), fontsize=15, pad=2)
 
-    cmap = cm.get_cmap(cmap_name).copy()
+    cmap = colormaps[cmap_name].copy()
     cmap.set_bad(color="#f1f1f1")
 
     for month in range(1, 13):
@@ -110,7 +117,7 @@ def render_calendar(counts, output, title, cmap_name, date_from=None, date_to=No
     years = list(range(start.year, end.year + 1))
     max_value = max(filtered.values())
 
-    fig = plt.figure(figsize=(13, max(4.5, len(years) * 4.4)))
+    fig = plt.figure(figsize=(13, max(4.5, len(years) * 4.4)), constrained_layout=True)
     outer = GridSpec(len(years), 1, figure=fig, hspace=0.36)
 
     if title:
@@ -119,11 +126,10 @@ def render_calendar(counts, output, title, cmap_name, date_from=None, date_to=No
     for idx, year in enumerate(years):
         render_year(fig, outer[idx], year, filtered, cmap_name, max_value)
 
-    scalar = cm.ScalarMappable(cmap=cm.get_cmap(cmap_name), norm=plt.Normalize(vmin=0, vmax=max_value))
+    scalar = cm.ScalarMappable(cmap=colormaps[cmap_name], norm=Normalize(vmin=0, vmax=max_value))
     cbar = fig.colorbar(scalar, ax=fig.axes, fraction=0.012, pad=0.01)
     cbar.set_label("Entries per day")
 
-    fig.tight_layout(rect=(0, 0, 1, 0.985 if title else 1))
     fig.savefig(output, dpi=200)
     plt.close(fig)
 
