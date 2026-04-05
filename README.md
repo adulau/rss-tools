@@ -15,6 +15,7 @@ As 2024 marks the resurgence of RSS and Atom[^1], I decided to update my rudimen
 * requests (for `rssfind.py`)
 * beautifulsoup4 + lxml (for `rssfind.py`, `rssmerge.py`, and `rssjournal.py`)
 * orjson (for `rssfind.py` JSON output)
+* matplotlib (for `rssgraph.py`)
 
 ## Tools
 
@@ -23,6 +24,7 @@ As 2024 marks the resurgence of RSS and Atom[^1], I decided to update my rudimen
 - **rssmerge** – Aggregate multiple RSS/Atom feeds and merge their items into a single chronological or randomized output.
 - **rssdir** – Generate an RSS or Atom feed automatically from the contents of a filesystem directory.
 - **rsscount** – Count the number of feed entries per day across one or more RSS feeds to produce activity statistics.
+- **rssgraph** – Generate a PNG calendar heatmap of per-day RSS/Atom activity from one or more feeds.
 - **rssinternetdraft (legacy)** – Convert IETF Internet-Draft announcement emails from a mailbox into an RSS feed.
 - **rssjournal** – Build daily Markdown journal pages from one or more feeds and maintain yearly index pages.
 
@@ -178,6 +180,29 @@ python3 rsscount.py https://paperbay.org/@a.rss | sort
 20240203	2
 20240204	3
 20240210	4
+```
+
+### rssgraph
+
+[`rssgraph.py`](https://github.com/adulau/rss-tools/blob/master/bin/rssgraph.py) reads one or more RSS/Atom feeds and generates a PNG calendar heatmap where each day color intensity maps to the number of published items.
+
+```shell
+python3 rssgraph.py --output activity.png \
+  "http://paperbay.org/@a.rss" "http://infosec.exchange/@adulau.rss"
+```
+
+```shell
+Usage: rssgraph.py [options] url(s)
+
+Options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output=OUTPUT
+                        output PNG filename, default rss-activity.png
+  -t TITLE, --title=TITLE
+                        graph title, default 'RSS/Atom activity heatmap'
+  -c CMAP, --cmap=CMAP  matplotlib colormap name, default YlGn
+  --from=DATE_FROM      start date filter (YYYYMMDD)
+  --to=DATE_TO          end date filter (YYYYMMDD)
 ```
 
 ### rssinternetdraft (legacy)

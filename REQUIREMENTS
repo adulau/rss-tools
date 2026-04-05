@@ -4,3 +4,4 @@ feedparser
 feedgen
 orjson
 requests
+matplotlib
