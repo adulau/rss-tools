@@ -288,6 +288,9 @@ def update_global_index(destination, years, title_prefix, link_extension):
     index_path = os.path.join(destination, "index.md")
     with open(index_path, "w", encoding="utf-8") as fobj:
         fobj.write(build_front_matter(f"Journal index{title_prefix}"))
+        fobj.write(
+            "This is an automatic journal generated from RSS/Atom feeds.\n\n"
+        )
         if not years:
             fobj.write("No yearly pages yet.\n")
             return
