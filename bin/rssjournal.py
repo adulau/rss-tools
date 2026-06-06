@@ -27,6 +27,7 @@ feedparser.USER_AGENT = "rssjournal.py +https://github.com/adulau/rss-tools"
 LINK_PATTERN = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 SOURCE_PATTERN = re.compile(r"^- Source:\s+`([^`]+)`\s*$")
 DAY_FILE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
+FRONT_MATTER_BOUNDARY = "---"
 
 
 def html_to_markdown(text):
@@ -169,15 +170,57 @@ def read_existing_links(path):
     return links
 
 
+def yaml_string(value):
+    escaped = str(value).replace('"', '\\"')
+    return f'"{escaped}"'
+
+
 def build_front_matter(title):
-    return f"---\nlayout: page\ntitle: {title}\n---\n\n"
+    return (
+        f"{FRONT_MATTER_BOUNDARY}\n"
+        "layout: page\n"
+        f"title: {yaml_string(title)}\n"
+        f"{FRONT_MATTER_BOUNDARY}\n\n"
+    )
+
+
+def has_front_matter(path):
+    if not os.path.exists(path):
+        return False
+
+    with open(path, "r", encoding="utf-8") as fobj:
+        first_line = fobj.readline().strip()
+        if first_line != FRONT_MATTER_BOUNDARY:
+            return False
+
+        for line in fobj:
+            if line.strip() == FRONT_MATTER_BOUNDARY:
+                return True
+
+    return False
+
+
+def ensure_markdown_front_matter(path, title):
+    front_matter = build_front_matter(title)
+
+    if not os.path.exists(path):
+        with open(path, "w", encoding="utf-8") as fobj:
+            fobj.write(front_matter)
+        return
+
+    if has_front_matter(path):
+        return
+
+    with open(path, "r", encoding="utf-8") as fobj:
+        existing_content = fobj.read()
+
+    with open(path, "w", encoding="utf-8") as fobj:
+        fobj.write(front_matter)
+        fobj.write(existing_content)
 
 
 def ensure_daily_file(path, day_key, title_prefix):
-    if os.path.exists(path):
-        return
-    with open(path, "w", encoding="utf-8") as fobj:
-        fobj.write(build_front_matter(f"{day_key}{title_prefix}"))
+    ensure_markdown_front_matter(path, f"{day_key}{title_prefix}")
 
 
 def append_new_entries(path, day_key, entries, title_prefix):
@@ -185,6 +228,7 @@ def append_new_entries(path, day_key, entries, title_prefix):
     existing_links = read_existing_links(path)
 
     new_lines = []
+    new_entry_count = 0
     for entry in entries:
         if entry["link"] in existing_links:
             continue
@@ -197,6 +241,7 @@ def append_new_entries(path, day_key, entries, title_prefix):
         if compact_description:
             new_lines.append(f"- Summary: {compact_description}\n")
         new_lines.append("\n---\n\n")
+        new_entry_count += 1
 
     if not new_lines:
         return 0
@@ -205,7 +250,7 @@ def append_new_entries(path, day_key, entries, title_prefix):
         if os.path.getsize(path) > 0:
             fobj.write("\n")
         fobj.writelines(new_lines)
-    return len(new_lines)
+    return new_entry_count
 
 
 def list_day_files(destination, year):
