@@ -28,6 +28,15 @@ LINK_PATTERN = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 SOURCE_PATTERN = re.compile(r"^- Source:\s+`([^`]+)`\s*$")
 DAY_FILE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
 FRONT_MATTER_BOUNDARY = "---"
+DAILY_SUMMARY_PREFIX = "**Day summary:**"
+
+
+def format_day_label(day_key, include_weekday=False):
+    if not include_weekday:
+        return day_key
+
+    day = datetime.datetime.strptime(day_key, "%Y-%m-%d")
+    return f"{day_key} ({day.strftime('%A')})"
 
 
 def html_to_markdown(text):
@@ -200,7 +209,7 @@ def has_front_matter(path):
     return False
 
 
-def ensure_markdown_front_matter(path, title):
+def ensure_markdown_front_matter(path, title, update_title=False):
     front_matter = build_front_matter(title)
 
     if not os.path.exists(path):
@@ -209,6 +218,8 @@ def ensure_markdown_front_matter(path, title):
         return
 
     if has_front_matter(path):
+        if update_title:
+            update_front_matter_title(path, title)
         return
 
     with open(path, "r", encoding="utf-8") as fobj:
@@ -219,12 +230,127 @@ def ensure_markdown_front_matter(path, title):
         fobj.write(existing_content)
 
 
-def ensure_daily_file(path, day_key, title_prefix):
-    ensure_markdown_front_matter(path, f"{day_key}{title_prefix}")
+def update_front_matter_title(path, title):
+    with open(path, "r", encoding="utf-8") as fobj:
+        content = fobj.read()
+
+    front_matter, body = split_front_matter(content)
+    if not front_matter:
+        return
+
+    title_line = f"title: {yaml_string(title)}"
+    lines = front_matter.splitlines()
+    for index, line in enumerate(lines):
+        if line.startswith("title:"):
+            lines[index] = title_line
+            break
+    else:
+        lines.insert(-1, title_line)
+
+    new_front_matter = "\n".join(lines) + "\n"
+    with open(path, "w", encoding="utf-8") as fobj:
+        fobj.write(new_front_matter)
+        fobj.write(body)
 
 
-def append_new_entries(path, day_key, entries, title_prefix):
-    ensure_daily_file(path, day_key, title_prefix)
+def ensure_daily_file(path, day_key, title_prefix, include_weekday=False):
+    ensure_markdown_front_matter(
+        path,
+        f"{format_day_label(day_key, include_weekday)}{title_prefix}",
+        update_title=include_weekday,
+    )
+
+
+def build_day_summary(entries, max_titles=3, max_sources=3):
+    if not entries:
+        return ""
+
+    sources = defaultdict(int)
+    titles = []
+    seen_titles = set()
+    for entry in entries:
+        domain = urlparse(entry["link"]).netloc
+        if domain:
+            sources[domain] += 1
+        title = entry["title"].strip()
+        if title and title not in seen_titles:
+            titles.append(title)
+            seen_titles.add(title)
+
+    source_names = [
+        source for source, _count in sorted(
+            sources.items(), key=lambda item: (-item[1], item[0])
+        )[:max_sources]
+    ]
+    summary_parts = [f"{len(entries)} item(s)"]
+    if source_names:
+        summary_parts.append(f"from {', '.join(source_names)}")
+    if titles:
+        summary_parts.append(
+            "including "
+            + "; ".join(f'“{title}”' for title in titles[:max_titles])
+        )
+
+    return "Today's RSS activity: " + " ".join(summary_parts) + "."
+
+
+def split_front_matter(content):
+    if not content.startswith(f"{FRONT_MATTER_BOUNDARY}\n"):
+        return "", content
+
+    boundary = f"\n{FRONT_MATTER_BOUNDARY}\n"
+    end = content.find(boundary, len(FRONT_MATTER_BOUNDARY) + 1)
+    if end == -1:
+        return "", content
+
+    front_matter_end = end + len(boundary)
+    return content[:front_matter_end], content[front_matter_end:]
+
+
+def upsert_day_summary(path, summary):
+    if not summary:
+        return
+
+    with open(path, "r", encoding="utf-8") as fobj:
+        content = fobj.read()
+
+    front_matter, body = split_front_matter(content)
+    lines = body.splitlines()
+    summary_line = f"{DAILY_SUMMARY_PREFIX} {summary}"
+    replaced = False
+    new_lines = []
+
+    for line in lines:
+        if line.startswith(DAILY_SUMMARY_PREFIX):
+            if not replaced:
+                new_lines.append(summary_line)
+                replaced = True
+            continue
+        new_lines.append(line)
+
+    if not replaced:
+        while new_lines and not new_lines[0].strip():
+            new_lines.pop(0)
+        new_lines.insert(0, "")
+        new_lines.insert(0, summary_line)
+
+    new_body = "\n".join(new_lines).rstrip() + "\n"
+    with open(path, "w", encoding="utf-8") as fobj:
+        fobj.write(front_matter)
+        fobj.write(new_body)
+
+
+def append_new_entries(
+    path,
+    day_key,
+    entries,
+    title_prefix,
+    include_weekday=False,
+    include_day_summary=False,
+):
+    ensure_daily_file(path, day_key, title_prefix, include_weekday)
+    if include_day_summary:
+        upsert_day_summary(path, build_day_summary(entries))
     existing_links = read_existing_links(path)
 
     new_lines = []
@@ -284,7 +410,9 @@ def count_sources(path):
     return sources
 
 
-def update_year_index(destination, year, title_prefix, link_extension):
+def update_year_index(
+    destination, year, title_prefix, link_extension, include_weekday=False
+):
     pages = list_day_files(destination, year)
     index_path = os.path.join(destination, f"{year}.md")
     source_stats = defaultdict(int)
@@ -304,8 +432,9 @@ def update_year_index(destination, year, title_prefix, link_extension):
             total_items += entries_count
             for source, source_count in count_sources(full_path).items():
                 source_stats[source] += source_count
+            page_label = format_day_label(page_day, include_weekday)
             fobj.write(
-                f"- [{page_day}]({page_day}{link_extension}) - {entries_count} item(s)\n"
+                f"- [{page_label}]({page_day}{link_extension}) - {entries_count} item(s)\n"
             )
 
         fobj.write("\n")
@@ -376,7 +505,15 @@ def collect_entries(urls, summarysize):
     return list(allitem.values())
 
 
-def write_journal(entries, destination, maxitem, title_prefix, link_extension):
+def write_journal(
+    entries,
+    destination,
+    maxitem,
+    title_prefix,
+    link_extension,
+    include_weekday=False,
+    include_day_summary=False,
+):
     day_entries = defaultdict(list)
 
     sorted_entries = sorted(entries, key=lambda x: x["epoch"], reverse=True)
@@ -392,13 +529,22 @@ def write_journal(entries, destination, maxitem, title_prefix, link_extension):
 
     for day_key, items in sorted(day_entries.items(), reverse=True):
         file_path = os.path.join(destination, f"{day_key}.md")
-        added = append_new_entries(file_path, day_key, items, title_prefix)
+        added = append_new_entries(
+            file_path,
+            day_key,
+            items,
+            title_prefix,
+            include_weekday,
+            include_day_summary,
+        )
         if added:
             updated.append((day_key, added))
 
     years = list_years_from_days(destination)
     for year in years:
-        update_year_index(destination, year, title_prefix, link_extension)
+        update_year_index(
+            destination, year, title_prefix, link_extension, include_weekday
+        )
     update_global_index(destination, years, title_prefix, link_extension)
 
     return updated
@@ -445,6 +591,20 @@ parser.add_option(
     default=".html",
     help='extension used for day links in the yearly index, default ".html"',
 )
+parser.add_option(
+    "--weekday",
+    action="store_true",
+    dest="include_weekday",
+    default=False,
+    help="add the weekday name next to generated dates",
+)
+parser.add_option(
+    "--day-summary",
+    action="store_true",
+    dest="include_day_summary",
+    default=False,
+    help="add or update a one-line summary for each generated daily page",
+)
 
 (options, args) = parser.parse_args()
 
@@ -459,6 +619,8 @@ changes = write_journal(
     int(options.maxitem),
     options.title_prefix,
     link_extension,
+    options.include_weekday,
+    options.include_day_summary,
 )
 
 for day, count in changes:

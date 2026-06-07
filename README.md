@@ -116,7 +116,7 @@ The destination files are read before writing to:
 - avoid adding duplicate entries already present in the Markdown pages.
 
 ```shell
-python3 rssjournal.py --destination ./journal \
+python3 rssjournal.py --destination ./journal --weekday --day-summary \
   "http://paperbay.org/@a.rss" "http://infosec.exchange/@adulau.rss"
 ```
 
@@ -129,10 +129,20 @@ Options:
                         maximum item to process from merged feed entries,
                         default 200
   -s SUMMARYSIZE, --summarysize=SUMMARYSIZE
-                        maximum size of the summary if a title is not present
+                        optional max length for fallback summary text when a
+                        title is missing (0 keeps full text, default 0)
   -d DESTINATION, --destination=DESTINATION
                         destination directory for markdown journal files,
                         default current directory
+  -p TITLE_PREFIX, --title-prefix=TITLE_PREFIX
+                        title suffix for generated markdown pages, default
+                        " Journal"
+  -e EXTENSION, --extension=EXTENSION
+                        extension used for day links in the yearly index,
+                        default ".html"
+  --weekday            add the weekday name next to generated dates
+  --day-summary        add or update a one-line summary for each generated
+                        daily page
 ```
 
 ### rssdir
