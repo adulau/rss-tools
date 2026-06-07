@@ -26,6 +26,7 @@ feedparser.USER_AGENT = "rssjournal.py +https://github.com/adulau/rss-tools"
 
 LINK_PATTERN = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 SOURCE_PATTERN = re.compile(r"^- Source:\s+`([^`]+)`\s*$")
+HOURLY_ACTIVITY_PREFIX = "**Hourly activity:**"
 DAY_FILE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
 FRONT_MATTER_BOUNDARY = "---"
 DAILY_SUMMARY_PREFIX = "**Day summary:**"
@@ -261,6 +262,38 @@ def ensure_daily_file(path, day_key, title_prefix, include_weekday=False):
     )
 
 
+def build_hourly_activity(entries):
+    counts = [0] * 24
+    for entry in entries:
+        hour = datetime.datetime.fromtimestamp(entry["epoch"]).hour
+        counts[hour] += 1
+
+    if not any(counts):
+        return ""
+
+    palette = ".:-=+*#%@"
+    max_count = max(counts)
+    pulse = []
+    for count in counts:
+        if count == 0:
+            pulse.append(palette[0])
+            continue
+        palette_index = max(1, round((count / max_count) * (len(palette) - 1)))
+        pulse.append(palette[palette_index])
+
+    hour_labels = " ".join(f"{hour:02d}" for hour in range(24))
+    pulse_line = "  ".join(pulse)
+    count_line = " ".join(f"{count:02d}" for count in counts)
+    return (
+        f"{HOURLY_ACTIVITY_PREFIX}\n"
+        "```text\n"
+        f"hour  {hour_labels}\n"
+        f"pulse  {pulse_line}\n"
+        f"count {count_line}\n"
+        "```"
+    )
+
+
 def build_day_summary(entries, max_titles=3, max_sources=3):
     if not entries:
         return ""
@@ -307,8 +340,8 @@ def split_front_matter(content):
     return content[:front_matter_end], content[front_matter_end:]
 
 
-def upsert_day_summary(path, summary):
-    if not summary:
+def upsert_markdown_block(path, marker_prefix, block):
+    if not block:
         return
 
     with open(path, "r", encoding="utf-8") as fobj:
@@ -316,28 +349,56 @@ def upsert_day_summary(path, summary):
 
     front_matter, body = split_front_matter(content)
     lines = body.splitlines()
-    summary_line = f"{DAILY_SUMMARY_PREFIX} {summary}"
-    replaced = False
+    block_lines = block.splitlines()
     new_lines = []
+    replaced = False
+    index = 0
 
-    for line in lines:
-        if line.startswith(DAILY_SUMMARY_PREFIX):
+    while index < len(lines):
+        line = lines[index]
+        if line.startswith(marker_prefix):
             if not replaced:
-                new_lines.append(summary_line)
+                new_lines.extend(block_lines)
                 replaced = True
+            index += 1
+            if index < len(lines) and lines[index].strip() == "```text":
+                index += 1
+                while index < len(lines):
+                    closing_line = lines[index]
+                    index += 1
+                    if closing_line.strip() == "```":
+                        break
             continue
         new_lines.append(line)
+        index += 1
 
     if not replaced:
         while new_lines and not new_lines[0].strip():
             new_lines.pop(0)
-        new_lines.insert(0, "")
-        new_lines.insert(0, summary_line)
+        insert_at = 0
+        if new_lines and new_lines[0].startswith(DAILY_SUMMARY_PREFIX):
+            insert_at = 1
+        insertion = block_lines + [""]
+        if insert_at > 0:
+            insertion = [""] + insertion
+        new_lines[insert_at:insert_at] = insertion
 
     new_body = "\n".join(new_lines).rstrip() + "\n"
     with open(path, "w", encoding="utf-8") as fobj:
         fobj.write(front_matter)
         fobj.write(new_body)
+
+
+def upsert_day_summary(path, summary):
+    upsert_markdown_block(
+        path, DAILY_SUMMARY_PREFIX, f"{DAILY_SUMMARY_PREFIX} {summary}"
+    )
+
+
+def upsert_hourly_activity(path, entries):
+    upsert_markdown_block(
+        path, HOURLY_ACTIVITY_PREFIX, build_hourly_activity(entries)
+    )
 
 
 def append_new_entries(
@@ -347,10 +408,13 @@ def append_new_entries(
     title_prefix,
     include_weekday=False,
     include_day_summary=False,
+    include_hourly_activity=False,
 ):
     ensure_daily_file(path, day_key, title_prefix, include_weekday)
     if include_day_summary:
         upsert_day_summary(path, build_day_summary(entries))
+    if include_hourly_activity:
+        upsert_hourly_activity(path, entries)
     existing_links = read_existing_links(path)
 
     new_lines = []
@@ -513,6 +577,7 @@ def write_journal(
     link_extension,
     include_weekday=False,
     include_day_summary=False,
+    include_hourly_activity=False,
 ):
     day_entries = defaultdict(list)
 
@@ -536,6 +601,7 @@ def write_journal(
             title_prefix,
             include_weekday,
             include_day_summary,
+            include_hourly_activity,
         )
         if added:
             updated.append((day_key, added))
@@ -605,6 +671,16 @@ parser.add_option(
     default=False,
     help="add or update a one-line summary for each generated daily page",
 )
+parser.add_option(
+    "--hourly-activity",
+    action="store_true",
+    dest="include_hourly_activity",
+    default=False,
+    help=(
+        "add or update a minimalist ASCII hourly activity histogram on each "
+        "generated daily page"
+    ),
+)
 
 (options, args) = parser.parse_args()
 
@@ -621,6 +697,7 @@ changes = write_journal(
     link_extension,
     options.include_weekday,
     options.include_day_summary,
+    options.include_hourly_activity,
 )
 
 for day, count in changes:
