@@ -115,8 +115,13 @@ The destination files are read before writing to:
 - preserve already-written historical content even if it disappears from feeds;
 - avoid adding duplicate entries already present in the Markdown pages.
 
+Use `--hourly-activity` to add a compact per-hour ASCII histogram to each
+updated daily page. The `pulse` row maps activity intensity to a small text
+palette while the `count` row keeps the exact hourly totals.
+
 ```shell
 python3 rssjournal.py --destination ./journal --weekday --day-summary \
+  --hourly-activity \
   "http://paperbay.org/@a.rss" "http://infosec.exchange/@adulau.rss"
 ```
 
@@ -143,6 +148,8 @@ Options:
   --weekday            add the weekday name next to generated dates
   --day-summary        add or update a one-line summary for each generated
                         daily page
+  --hourly-activity    add or update a minimalist ASCII hourly activity
+                        histogram on each generated daily page
 ```
 
 ### rssdir
